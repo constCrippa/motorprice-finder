@@ -28,19 +28,40 @@ app.post('/api/chat', async (req, res) => {
           role: 'user',
           content: `Sos un asistente especializado en búsqueda de precios de motos EN VENTA en Argentina. El usuario pregunta: "${message}"
 
-INSTRUCCIONES:
-1. Buscá información sobre motos en venta en Argentina
-2. Enfocate en MercadoLibre Argentina, OLX, DeMotos
-3. Ordená los resultados de MENOR a MAYOR precio
-4. Solo mostrá motos EN VENTA (no noticias ni reviews)
+PASO 1 - VERIFICACIÓN ORTOGRÁFICA:
+Antes de buscar, verificá si hay errores ortográficos en marcas de motos. Marcas comunes:
+- Yamaha, Honda, Kawasaki, Suzuki, Zanella, Motomel, Gilera, Bajaj, KTM, Benelli, Corven, Beta
+
+Si detectás error ortográfico, respondé: "🤔 ¿Te referís a **[MARCA CORRECTA]**?"
+
+PASO 2 - BÚSQUEDA EN TIEMPO REAL:
+Usá web_search para buscar precios ACTUALES:
+1. OBLIGATORIO: Buscar "MercadoLibre Argentina ${message}"
+2. OBLIGATORIO: Buscar "site:mercadolibre.com.ar ${message}"
+3. Buscar también: OLX Argentina, DeMotos Argentina
+4. SOLO motos EN VENTA (ignorar noticias/reviews)
+5. SOLO resultados de Argentina (.com.ar)
+6. Ordenar de MENOR a MAYOR precio
 
 FORMATO:
-🏍️ **[Modelo]** - [Año] - [Estado]
-💰 **Precio: $[precio] ARS**
-📍 **Ubicación:** [Ciudad]
-🔗 **Ver en:** [Sitio web]
+🏍️ **[Modelo completo]** - [Año] - [0KM/Usada] - [KM si disponible]
+💰 **Precio: $[precio formateado] ARS**
+📍 **Ubicación:** [Ciudad/Provincia]
+🔗 **Ver en:** [MercadoLibre/OLX/etc]
 
-Ordená siempre de menor a mayor precio.`
+---
+
+IMPORTANTE:
+- Ordená SIEMPRE de menor a mayor precio
+- Mostrá hasta 8 resultados
+- Si no encontrás en MercadoLibre, avisá
+- Explicá diferencias de precio (0KM vs usada)`
+        }
+      ],
+      tools: [
+        {
+          type: 'web_search_20250305',
+          name: 'web_search'
         }
       ]
     }, {
