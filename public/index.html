@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoPrice Finder - Buscador de Precios de Motos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', system-ui, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .background-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px),
+                repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(255,255,255,.02) 35px, rgba(255,255,255,.02) 70px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        header {
+            background: linear-gradient(90deg, #ff4500 0%, #ff6b35 100%);
+            padding: 24px 32px;
+            border-bottom: 4px solid #ff4500;
+            box-shadow: 0 8px 32px rgba(255, 69, 0, 0.3);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 12px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-icon svg {
+            width: 32px;
+            height: 32px;
+            stroke: #fff;
+            stroke-width: 2.5;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 900;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            margin: 4px 0 0 0;
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .chat-container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 120px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-right: 8px;
+        }
+
+        .message-wrapper {
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message-wrapper.user {
+            justify-content: flex-end;
+        }
+
+        .message-wrapper.assistant {
+            justify-content: flex-start;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 16px 20px;
+            color: #fff;
+            font-size: 15px;
+            line-height: 1.6;
+            font-weight: 500;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .message.user {
+            border-radius: 20px 20px 4px 20px;
+            background: linear-gradient(135deg, #ff4500 0%, #ff6b35 100%);
+            box-shadow: 0 4px 16px rgba(255, 69, 0, 0.3);
+        }
+
+        .message.assistant {
+            border-radius: 20px 20px 20px 4px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .loading-message {
+            display: flex;
+            justify-content: flex-start;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .loading-content {
+            padding: 16px 20px;
+            border-radius: 20px 20px 20px 4px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .loading-icon {
+            width: 20px;
+            height: 20px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loading-text {
+            color: #fff;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .input-form {
+            display: flex;
+            gap: 12px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+            padding: 16px;
+            border-radius: 24px;
+            border: 2px solid rgba(255, 69, 0, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-field {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 14px 20px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 500;
+            outline: none;
+            font-family: 'Rajdhani', system-ui, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: rgba(255,255,255,0.08);
+            border-color: #ff4500;
+        }
+
+        .input-field::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #ff4500 0%, #ff6b35 100%);
+            border: none;
+            border-radius: 16px;
+            padding: 14px 28px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 16px rgba(255, 69, 0, 0.4);
+            transition: all 0.3s ease;
+            font-family: 'Rajdhani', system-ui, sans-serif;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(255, 69, 0, 0.5);
+        }
+
+        .send-button:disabled {
+            background: rgba(255,255,255,0.1);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .send-button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .quick-actions {
+            margin-top: 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .quick-button {
+            background: rgba(255, 69, 0, 0.15);
+            border: 1px solid rgba(255, 69, 0, 0.3);
+            border-radius: 12px;
+            padding: 8px 16px;
+            color: #ff6b35;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Rajdhani', system-ui, sans-serif;
+        }
+
+        .quick-button:hover {
+            background: rgba(255, 69, 0, 0.25);
+            border-color: #ff4500;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 69, 0, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 69, 0, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 24px;
+            }
+            .header-content {
+                padding: 0;
+            }
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-pattern"></div>
+
+    <header>
+        <div class="header-content">
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 18c0-1.5.5-3 1.5-4 1-1 2.5-1.5 4-1.5h3c1.5 0 3 .5 4 1.5 1 1 1.5 2.5 1.5 4"/>
+                    <path d="M12 2 8 8h8l-4-6Z"/>
+                    <circle cx="12" cy="10" r="2"/>
+                </svg>
+            </div>
+            <div>
+                <h1>MotoPrice Finder</h1>
+                <p class="subtitle">Buscador inteligente de precios de motos</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="chat-container">
+        <div class="messages-container" id="messagesContainer"></div>
+
+        <form class="input-form" id="chatForm">
+            <input 
+                type="text" 
+                class="input-field" 
+                id="messageInput"
+                placeholder="Ej: Honda Tornado 250, Zanella RX 150, motos usadas..."
+                autocomplete="off"
+            />
+            <button type="submit" class="send-button" id="sendButton">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                Buscar
+            </button>
+        </form>
+
+        <div class="quick-actions">
+            <button class="quick-button" onclick="setInput('Yamaha FZ 150')">Yamaha FZ 150</button>
+            <button class="quick-button" onclick="setInput('Honda Tornado 250')">Honda Tornado 250</button>
+            <button class="quick-button" onclick="setInput('Zanella RX 150')">Zanella RX 150</button>
+            <button class="quick-button" onclick="setInput('Motos 0km')">Motos 0km</button>
+            <button class="quick-button" onclick="setInput('Motos usadas')">Motos usadas</button>
+        </div>
+    </div>
+
+    <script>
+        let messages = [
+            {
+                role: 'assistant',
+                content: '¡Hola! Soy tu asistente especializado en búsqueda de precios de motos EN VENTA en Argentina 🇦🇷\n\nBusco en MercadoLibre Argentina, OLX, DeMotos y más sitios, y te muestro todo ordenado de MENOR a MAYOR precio.\n\nDecime qué moto buscás:\n• "Yamaha FZ 150"\n• "Honda Tornado 250 usada"\n• "Zanella RX 150 0km"\n• "motos 250cc Buenos Aires"'
+            }
+        ];
+        let isLoading = false;
+
+        const messagesContainer = document.getElementById('messagesContainer');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+
+        function renderMessages() {
+            messagesContainer.innerHTML = '';
+            
+            messages.forEach(msg => {
+                const wrapper = document.createElement('div');
+                wrapper.className = `message-wrapper ${msg.role}`;
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.role}`;
+                messageDiv.textContent = msg.content;
+                
+                wrapper.appendChild(messageDiv);
+                messagesContainer.appendChild(wrapper);
+            });
+
+            if (isLoading) {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'loading-message';
+                loadingDiv.innerHTML = `
+                    <div class="loading-content">
+                        <svg class="loading-icon" viewBox="0 0 24 24" fill="none" stroke="#ff4500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <span class="loading-text">Buscando precios...</span>
+                    </div>
+                `;
+                messagesContainer.appendChild(loadingDiv);
+            }
+
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function setInput(text) {
+            messageInput.value = text;
+            messageInput.focus();
+        }
+
+        async function sendMessage(userMessage) {
+            messages.push({ role: 'user', content: userMessage });
+            renderMessages();
+
+            isLoading = true;
+            renderMessages();
+
+            try {
+                // Llamar a la API de Vercel
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: userMessage
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+
+                const assistantMessage = data.message || 'No pude encontrar información sobre esa moto.';
+                messages.push({ role: 'assistant', content: assistantMessage });
+
+            } catch (error) {
+                console.error('Error completo:', error);
+                
+                let errorMessage = '❌ Error al buscar precios:\n\n';
+                errorMessage += `${error.message}\n\n`;
+                errorMessage += 'Verificá que la API key esté configurada en Vercel.';
+                
+                messages.push({ 
+                    role: 'assistant', 
+                    content: errorMessage
+                });
+            } finally {
+                isLoading = false;
+                renderMessages();
+            }
+        }
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const userMessage = messageInput.value.trim();
+            
+            if (!userMessage || isLoading) return;
+
+            messageInput.value = '';
+            sendMessage(userMessage);
+        });
+
+        // Render initial message
+        renderMessages();
+    </script>
+</body>
+</html>
+
