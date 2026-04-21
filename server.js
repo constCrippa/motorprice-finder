@@ -20,7 +20,26 @@ app.post('/api/chat', async (req, res) => {
 
     console.log('Buscando:', message);
 
-    const promptText = 'Sos un asistente de busqueda de precios de motos en Argentina. Usuario pregunta: "' + message + '". Busca en MercadoLibre Argentina y OLX. Ordena de menor a mayor precio. Incluye links completos.';
+    const promptText = 'Sos un experto en busqueda de precios de motos EN VENTA en Argentina.\n\n' +
+      'Usuario busca: "' + message + '"\n\n' +
+      'INSTRUCCIONES DE BUSQUEDA:\n' +
+      '1. Usa web_search para buscar: "site:mercadolibre.com.ar ' + message + ' en venta"\n' +
+      '2. Busca ANUNCIOS ESPECIFICOS de motos en venta, NO paginas de busqueda generales\n' +
+      '3. Busca tambien en OLX: "site:olx.com.ar ' + message + '"\n' +
+      '4. EXTRAE el link DIRECTO de cada anuncio individual\n' +
+      '5. VERIFICA que cada link sea de un anuncio especifico, no una pagina de resultados\n\n' +
+      'FORMATO DE CADA RESULTADO:\n' +
+      'Modelo - Anio - Estado - KM\n' +
+      'Precio: $XXXXX ARS\n' +
+      'Ubicacion: Ciudad\n' +
+      'Link: [URL COMPLETA Y EXACTA del anuncio]\n\n' +
+      'IMPORTANTE:\n' +
+      '- Ordena de MENOR a MAYOR precio\n' +
+      '- Muestra hasta 6 resultados\n' +
+      '- Cada link debe ser DIRECTO al anuncio (ej: mercadolibre.com.ar/MLA-123456...)\n' +
+      '- NO incluyas links de busqueda (sin "/_Desde_" ni parametros de busqueda)\n' +
+      '- Si encuentras error en nombre de marca, sugiere la correcta\n' +
+      '- Verifica ortografia: Yamaha, Honda, Kawasaki, Suzuki, Zanella, etc';
 
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
       model: 'claude-opus-4-7',
