@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 
-// Ruta API para el chatbot - VERSIÓN SIMPLE SIN WEB SEARCH
+// Ruta API para el chatbot - VERSIÓN COMPATIBLE ARGENTINA
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
@@ -22,23 +22,26 @@ app.post('/api/chat', async (req, res) => {
     }
 
     console.log('✅ API key encontrada');
-    console.log('📤 Enviando request a Anthropic (versión simple)...');
+    console.log('📤 Enviando request a Anthropic...');
 
-    // Llamar a Anthropic API - SIN WEB SEARCH
+    // Llamar a Anthropic API - Modelo compatible con Argentina
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-3-haiku-20240307',  // Modelo básico disponible en todas las regiones
       max_tokens: 1024,
       messages: [
         {
           role: 'user',
-          content: `El usuario está buscando información sobre: "${message}"
+          content: `El usuario pregunta: "${message}"
 
-Por ahora, respondé que estás en modo de prueba y que pronto vas a poder buscar precios reales de motos en Argentina.
+Respondé que:
+1. ✅ La conexión con Claude funciona perfectamente
+2. 🏍️ Estás listo para ayudar con búsqueda de precios de motos
+3. Pronto vamos a activar la búsqueda web en tiempo real
+4. Por ahora, podés dar consejos generales sobre motos en Argentina
 
-Dale un mensaje amigable y decile que probaste que la conexión con la API funciona correctamente.`
+Dale un mensaje amigable y útil.`
         }
       ]
-      // SIN tools por ahora - solo probamos que funcione
     }, {
       headers: {
         'Content-Type': 'application/json',
@@ -62,7 +65,7 @@ Dale un mensaje amigable y decile que probaste que la conexión con la API funci
     }
 
     res.json({
-      message: assistantMessage || 'Conexión exitosa con la API.'
+      message: assistantMessage || '✅ Conexión exitosa con Claude API!'
     });
 
   } catch (error) {
@@ -74,18 +77,18 @@ Dale un mensaje amigable y decile que probaste que la conexión con la API funci
       console.error('Error:', JSON.stringify(errorData, null, 2));
       
       return res.status(error.response.status).json({
-        error: errorData.error?.message || errorData.error?.type || 'Error de API de Anthropic',
-        details: errorData
+        error: errorData.error?.message || errorData.error?.type || 'Error de API',
+        details: JSON.stringify(errorData)
       });
     }
     
     res.status(500).json({
-      error: 'Error al procesar el request: ' + error.message
+      error: 'Error: ' + error.message
     });
   }
 });
 
-// Servir el HTML desde la raíz
+// Servir el HTML
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -93,7 +96,8 @@ app.get('/', (req, res) => {
 // Health check
 app.get('/health', (req, res) => {
   res.json({ 
-    status: 'ok', 
+    status: 'ok',
+    model: 'claude-3-haiku-20240307',
     hasApiKey: !!process.env.ANTHROPIC_API_KEY 
   });
 });
@@ -102,5 +106,5 @@ app.get('/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
   console.log(`🔑 API key configurada: ${process.env.ANTHROPIC_API_KEY ? 'SÍ ✅' : 'NO ❌'}`);
-  console.log(`⚠️  MODO PRUEBA - Sin web search por ahora`);
+  console.log(`🌍 Usando Claude 3 Haiku (compatible Argentina)`);
 });
