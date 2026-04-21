@@ -10,38 +10,33 @@ app.use(express.static(__dirname));
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message } = req.body;
+    const message = req.body.message;
 
     if (!process.env.ANTHROPIC_API_KEY) {
-      return res.status(500).json({ 
-        error: 'API key no configurada' 
-      });
+      return res.status(500).json({ error: 'API key no configurada' });
     }
 
     console.log('Buscando:', message);
 
     const promptText = 'Sos un experto en busqueda de precios de motos EN VENTA en Argentina.\n\n' +
       'Usuario busca: "' + message + '"\n\n' +
-      'INSTRUCCIONES DE BUSQUEDA:\n' +
-      '1. OBLIGATORIO: Busca en "site:mercadolibre.com.ar ' + message + ' en venta"\n' +
-      '2. OBLIGATORIO: Busca en "site:demotos.com.ar ' + message + '"\n' +
-      '3. Busca tambien en "site:facebook.com/marketplace ' + message + ' Argentina"\n' +
-      '4. Busca en "site:autocosmos.com.ar motos ' + message + '"\n' +
-      '5. EXTRAE el link DIRECTO de cada anuncio individual\n' +
-      '6. VERIFICA que cada link sea de un anuncio especifico, no una pagina de resultados\n\n' +
-      'FORMATO DE CADA RESULTADO:\n' +
-      'Modelo - Anio - Estado - KM\n' +
+      'INSTRUCCIONES:\n' +
+      '1. Busca en MercadoLibre Argentina: "site:mercadolibre.com.ar ' + message + ' en venta"\n' +
+      '2. Busca en DeMotos: "site:demotos.com.ar ' + message + '"\n' +
+      '3. Busca en Facebook Marketplace Argentina\n' +
+      '4. Busca en AutoCosmos Argentina\n' +
+      '5. Extrae el link DIRECTO de cada anuncio individual\n\n' +
+      'FORMATO:\n' +
+      'Modelo - Anio - Estado\n' +
       'Precio: $XXXXX ARS\n' +
       'Ubicacion: Ciudad\n' +
-      'Link: [URL COMPLETA Y EXACTA del anuncio]\n\n' +
-      'IMPORTANTE:\n' +
-      '- Prioriza MercadoLibre y DeMotos (los mas confiables)\n' +
+      'Link: [URL completa del anuncio]\n\n' +
+      'REGLAS:\n' +
       '- Ordena de MENOR a MAYOR precio\n' +
-      '- Muestra hasta 6 resultados\n' +
-      '- Cada link debe ser DIRECTO al anuncio\n' +
-      '- NO incluyas links de busqueda generales\n' +
-      '- Si encuentras error en nombre de marca, sugiere la correcta\n' +
-      '- Verifica ortografia: Yamaha, Honda, Kawasaki, Suzuki, Zanella, etc';
+      '- Maximo 6 resultados\n' +
+      '- Solo anuncios especificos, no paginas de busqueda\n' +
+      '- Si hay error ortografico en la marca, sugiere la correcta\n' +
+      '- Marcas validas: Yamaha, Honda, Kawasaki, Suzuki, Zanella, Motomel, Gilera, Bajaj, KTM';
 
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
       model: 'claude-opus-4-7',
@@ -70,10 +65,12 @@ app.post('/api/chat', async (req, res) => {
     res.json({ message: assistantMessage || 'No encontre informacion.' });
 
   } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
+    const errorData = error.response && error.response.data;
+    console.error('Error:', errorData || error.message);
+    
     if (error.response) {
       return res.status(error.response.status).json({
-        error: JSON.stringify(error.response.data)
+        error: JSON.stringify(errorData)
       });
     }
     res.status(500).json({ error: error.message });
@@ -84,8 +81,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log('Servidor en puerto ' + PORT);
-});
+app.listen(PORT, function() {
   console.log('Servidor en puerto ' + PORT);
 });
