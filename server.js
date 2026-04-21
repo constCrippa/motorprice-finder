@@ -13,27 +13,19 @@ app.post('/api/chat', async (req, res) => {
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return res.status(500).json({ 
-        error: 'API key no configurada en Render' 
+        error: 'API key no configurada' 
       });
     }
 
-    console.log('📤 Buscando:', message);
+    console.log('Buscando:', message);
+
+    const promptText = 'Sos un asistente de busqueda de precios de motos en Argentina. Usuario pregunta: "' + message + '". Busca en MercadoLibre Argentina y OLX. Ordena de menor a mayor precio. Incluye links completos.';
 
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
       model: 'claude-opus-4-7',
       max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content: 'Sos un asistente especializado en búsqueda de precios de motos EN VENTA en Argentina. El usuario pregunta: "' + message + '"\n\nPASO 1 - VERIFICACIÓN ORTOGRÁFICA:\nAntes de buscar, verifica si hay errores ortográficos en marcas de motos.\nMarcas: Yamaha, Honda, Kawasaki, Suzuki, Zanella, Motomel, Gilera, Bajaj, KTM, Benelli, Corven, Beta\n\nSi detectas error, responde: "¿Te referís a [MARCA CORRECTA]?"\n\nPASO 2 - BÚSQUEDA EN TIEMPO REAL:\nUsa web_search para buscar precios ACTUALES:\n1. OBLIGATORIO: Buscar "MercadoLibre Argentina ' + message + '"\n2. OBLIGATORIO: Buscar "site:mercadolibre.com.ar ' + message + '"\n3. Buscar: OLX Argentina, DeMotos Argentina\n4. SOLO motos EN VENTA (no noticias)\n5. SOLO Argentina (.com.ar)\n6. Ordenar de MENOR a MAYOR precio\n\nFORMATO:\n🏍️ **[Modelo]** - [Año] - [0KM/Usada]\n💰 **Precio: $[precio] ARS**\n📍 **Ubicación:** [Ciudad]\n🔗 **Ver en:** [LINK COMPLETO de MercadoLibre/OLX]\n\nIMPORTANTE:\n- Ordena SIEMPRE de menor a mayor precio\n- Muestra hasta 8 resultados\n- SIEMPRE incluye el link completo del anuncio\n- Explica diferencias de precio'
-        }
-      ],
-      tools: [
-        {
-          type: 'web_search_20250305',
-          name: 'web_search'
-        }
-      ]
+      messages: [{ role: 'user', content: promptText }],
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }]
     }, {
       headers: {
         'Content-Type': 'application/json',
@@ -41,8 +33,6 @@ app.post('/api/chat', async (req, res) => {
         'anthropic-version': '2023-06-01'
       }
     });
-
-    console.log('✅ Respuesta recibida');
 
     const data = response.data;
     let assistantMessage = '';
@@ -55,22 +45,16 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
-    res.json({
-      message: assistantMessage || 'No encontré información.'
-    });
+    res.json({ message: assistantMessage || 'No encontre informacion.' });
 
   } catch (error) {
-    console.error('❌ Error:', error.response?.data || error.message);
-    
+    console.error('Error:', error.response?.data || error.message);
     if (error.response) {
       return res.status(error.response.status).json({
         error: JSON.stringify(error.response.data)
       });
     }
-    
-    res.status(500).json({
-      error: error.message
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -79,7 +63,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`🤖 Claude Opus 4.7`);
-  console.log(`🔑 API: ${process.env.ANTHROPIC_API_KEY ? 'OK ✅' : 'FALTA ❌'}`);
+  console.log('Servidor en puerto ' + PORT);
 });
