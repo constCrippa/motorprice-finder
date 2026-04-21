@@ -26,7 +26,7 @@ app.post('/api/chat', async (req, res) => {
 
     // Llamar a Anthropic API - SIN WEB SEARCH
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
-      model: 'claude-3-5-sonnet-20240620',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 1024,
       messages: [
         {
@@ -104,4 +104,3 @@ app.listen(PORT, () => {
   console.log(`🔑 API key configurada: ${process.env.ANTHROPIC_API_KEY ? 'SÍ ✅' : 'NO ❌'}`);
   console.log(`⚠️  MODO PRUEBA - Sin web search por ahora`);
 });
-
