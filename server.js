@@ -15,14 +15,18 @@ app.post('/api/chat', async (req, res) => {
 
     // Verificar que la API key esté configurada
     if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('❌ API key no configurada');
       return res.status(500).json({ 
-        error: 'API key no configurada en Render. Andá a Environment y agregá ANTHROPIC_API_KEY' 
+        error: 'API key no configurada en Render. Andá a Settings > Environment y agregá ANTHROPIC_API_KEY' 
       });
     }
 
+    console.log('✅ API key encontrada');
+    console.log('📤 Enviando request a Anthropic...');
+
     // Llamar a Anthropic API
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-sonnet-20240620',
       max_tokens: 4096,
       messages: [
         {
@@ -95,6 +99,8 @@ IMPORTANTE:
       }
     });
 
+    console.log('✅ Respuesta recibida de Anthropic');
+
     const data = response.data;
 
     // Extraer el texto de la respuesta
@@ -112,16 +118,21 @@ IMPORTANTE:
     });
 
   } catch (error) {
-    console.error('Error en API:', error.response?.data || error.message);
+    console.error('❌ Error completo:', error.response?.data || error.message);
     
     if (error.response) {
+      const errorData = error.response.data;
+      console.error('Status:', error.response.status);
+      console.error('Error:', JSON.stringify(errorData, null, 2));
+      
       return res.status(error.response.status).json({
-        error: error.response.data?.error?.message || 'Error al comunicarse con la API de Anthropic'
+        error: errorData.error?.message || errorData.error?.type || 'Error de API de Anthropic',
+        details: errorData
       });
     }
     
     res.status(500).json({
-      error: error.message || 'Error interno del servidor'
+      error: 'Error al procesar el request: ' + error.message
     });
   }
 });
@@ -131,7 +142,16 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    hasApiKey: !!process.env.ANTHROPIC_API_KEY 
+  });
+});
+
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  console.log(`🔑 API key configurada: ${process.env.ANTHROPIC_API_KEY ? 'SÍ ✅' : 'NO ❌'}`);
 });
