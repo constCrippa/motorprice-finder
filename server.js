@@ -18,43 +18,32 @@ app.post('/api/chat', async (req, res) => {
 
     console.log('Buscando:', message);
 
-    const promptText = 'Sos un experto en busqueda de ANUNCIOS ESPECIFICOS de motos en venta en Argentina.\n\n' +
-      'Usuario busca: "' + message + '"\n\n' +
-      'INSTRUCCIONES CRITICAS SOBRE LINKS:\n\n' +
-      'REGLA MAS IMPORTANTE: Cada link DEBE ser a un ANUNCIO INDIVIDUAL ESPECIFICO, NUNCA a una pagina de listado/busqueda.\n\n' +
-      'COMO IDENTIFICAR LINKS CORRECTOS DE MERCADOLIBRE:\n' +
-      '- CORRECTO: https://articulo.mercadolibre.com.ar/MLA-123456789-yamaha-fz-150-2023\n' +
-      '- CORRECTO: https://moto.mercadolibre.com.ar/MLA-987654321-honda-wave-110\n' +
-      '- CORRECTO: URLs que contengan "MLA-" seguido de numeros\n' +
-      '- INCORRECTO: https://motos.mercadolibre.com.ar/yamaha/ (esto es listado)\n' +
-      '- INCORRECTO: URLs con "/listado" o "_Desde_" (son paginas de busqueda)\n' +
-      '- INCORRECTO: URLs que terminan solo con el nombre de la marca\n\n' +
-      'COMO IDENTIFICAR LINKS CORRECTOS DE DEMOTOS:\n' +
-      '- CORRECTO: https://www.demotos.com.ar/usados/yamaha-fz-150-2023-id12345\n' +
-      '- INCORRECTO: https://www.demotos.com.ar/usados/yamaha (listado)\n\n' +
-      'PROCESO DE BUSQUEDA:\n' +
-      '1. Busca en MercadoLibre Argentina anuncios especificos de ' + message + '\n' +
-      '2. Busca en DeMotos.com.ar anuncios especificos de ' + message + '\n' +
-      '3. Busca en AutoCosmos Argentina\n' +
-      '4. De cada anuncio EXTRAE la URL DIRECTA que contenga "MLA-XXXXX" o ID especifico\n' +
-      '5. Si solo encontras paginas de listado, DESCARTALAS y busca el anuncio individual\n' +
-      '6. VERIFICA cada URL antes de incluirla: debe tener el ID del anuncio\n\n' +
+    const promptText = 'Busca motos 0KM (NUEVAS, nunca usadas) de "' + message + '" en Argentina.\n\n' +
+      'PRIORIDAD DE SITIOS:\n' +
+      '1. PRIORITARIO: cycles.com.ar o cycles.com (mostrar PRIMERO sus resultados)\n' +
+      '2. MercadoLibre Argentina (solo anuncios 0KM)\n' +
+      '3. DeMotos.com.ar (solo 0KM)\n' +
+      '4. Concesionarias oficiales\n\n' +
+      'REGLAS:\n' +
+      '- SOLO motos 0KM (nuevas, sin uso)\n' +
+      '- DESCARTAR cualquier moto usada\n' +
+      '- Links DIRECTOS al producto (MercadoLibre: con MLA-XXXXX)\n\n' +
       'FORMATO:\n' +
-      'Modelo - Anio - Estado\n' +
-      'Precio: $XXXXX ARS\n' +
-      'Ubicacion: Ciudad\n' +
-      'Link: [URL DIRECTA con ID del anuncio]\n\n' +
-      'REGLAS FINALES:\n' +
-      '- Solo incluye resultados si tenes el link DIRECTO al anuncio individual\n' +
-      '- Si un resultado no tiene link directo, NO lo incluyas\n' +
-      '- Mejor mostrar menos resultados con links correctos que muchos con links a listados\n' +
-      '- Ordena de MENOR a MAYOR precio\n' +
-      '- Maximo 6 resultados\n' +
-      '- Si hay error ortografico en la marca, sugiere la correcta';
+      'Sitio: [nombre del sitio]\n' +
+      'Modelo - 0KM\n' +
+      'Precio: $XXX ARS\n' +
+      'Link: [URL directa]\n\n' +
+      'AL FINAL incluye:\n' +
+      '=== COMPARACION DE PRECIOS ===\n' +
+      'Precio mas bajo: $XXX en [sitio]\n' +
+      'Precio mas alto: $XXX en [sitio]\n' +
+      'Diferencia: $XXX (X%)\n' +
+      'Recomendacion: [mejor opcion y por que]\n\n' +
+      'Ordena de menor a mayor precio. Maximo 6 resultados.';
 
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
       model: 'claude-opus-4-7',
-      max_tokens: 4096,
+      max_tokens: 2048,
       messages: [{ role: 'user', content: promptText }],
       tools: [{ type: 'web_search_20250305', name: 'web_search' }]
     }, {
