@@ -18,25 +18,39 @@ app.post('/api/chat', async (req, res) => {
 
     console.log('Buscando:', message);
 
-    const promptText = 'Sos un experto en busqueda de precios de motos EN VENTA en Argentina.\n\n' +
+    const promptText = 'Sos un experto en busqueda de ANUNCIOS ESPECIFICOS de motos en venta en Argentina.\n\n' +
       'Usuario busca: "' + message + '"\n\n' +
-      'INSTRUCCIONES:\n' +
-      '1. Busca en MercadoLibre Argentina: "site:mercadolibre.com.ar ' + message + ' en venta"\n' +
-      '2. Busca en DeMotos: "site:demotos.com.ar ' + message + '"\n' +
-      '3. Busca en Facebook Marketplace Argentina\n' +
-      '4. Busca en AutoCosmos Argentina\n' +
-      '5. Extrae el link DIRECTO de cada anuncio individual\n\n' +
+      'INSTRUCCIONES CRITICAS SOBRE LINKS:\n\n' +
+      'REGLA MAS IMPORTANTE: Cada link DEBE ser a un ANUNCIO INDIVIDUAL ESPECIFICO, NUNCA a una pagina de listado/busqueda.\n\n' +
+      'COMO IDENTIFICAR LINKS CORRECTOS DE MERCADOLIBRE:\n' +
+      '- CORRECTO: https://articulo.mercadolibre.com.ar/MLA-123456789-yamaha-fz-150-2023\n' +
+      '- CORRECTO: https://moto.mercadolibre.com.ar/MLA-987654321-honda-wave-110\n' +
+      '- CORRECTO: URLs que contengan "MLA-" seguido de numeros\n' +
+      '- INCORRECTO: https://motos.mercadolibre.com.ar/yamaha/ (esto es listado)\n' +
+      '- INCORRECTO: URLs con "/listado" o "_Desde_" (son paginas de busqueda)\n' +
+      '- INCORRECTO: URLs que terminan solo con el nombre de la marca\n\n' +
+      'COMO IDENTIFICAR LINKS CORRECTOS DE DEMOTOS:\n' +
+      '- CORRECTO: https://www.demotos.com.ar/usados/yamaha-fz-150-2023-id12345\n' +
+      '- INCORRECTO: https://www.demotos.com.ar/usados/yamaha (listado)\n\n' +
+      'PROCESO DE BUSQUEDA:\n' +
+      '1. Busca en MercadoLibre Argentina anuncios especificos de ' + message + '\n' +
+      '2. Busca en DeMotos.com.ar anuncios especificos de ' + message + '\n' +
+      '3. Busca en AutoCosmos Argentina\n' +
+      '4. De cada anuncio EXTRAE la URL DIRECTA que contenga "MLA-XXXXX" o ID especifico\n' +
+      '5. Si solo encontras paginas de listado, DESCARTALAS y busca el anuncio individual\n' +
+      '6. VERIFICA cada URL antes de incluirla: debe tener el ID del anuncio\n\n' +
       'FORMATO:\n' +
       'Modelo - Anio - Estado\n' +
       'Precio: $XXXXX ARS\n' +
       'Ubicacion: Ciudad\n' +
-      'Link: [URL completa del anuncio]\n\n' +
-      'REGLAS:\n' +
+      'Link: [URL DIRECTA con ID del anuncio]\n\n' +
+      'REGLAS FINALES:\n' +
+      '- Solo incluye resultados si tenes el link DIRECTO al anuncio individual\n' +
+      '- Si un resultado no tiene link directo, NO lo incluyas\n' +
+      '- Mejor mostrar menos resultados con links correctos que muchos con links a listados\n' +
       '- Ordena de MENOR a MAYOR precio\n' +
       '- Maximo 6 resultados\n' +
-      '- Solo anuncios especificos, no paginas de busqueda\n' +
-      '- Si hay error ortografico en la marca, sugiere la correcta\n' +
-      '- Marcas validas: Yamaha, Honda, Kawasaki, Suzuki, Zanella, Motomel, Gilera, Bajaj, KTM';
+      '- Si hay error ortografico en la marca, sugiere la correcta';
 
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
       model: 'claude-opus-4-7',
