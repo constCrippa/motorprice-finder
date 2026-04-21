@@ -43,11 +43,17 @@ Usá web_search para buscar precios ACTUALES:
 5. SOLO resultados de Argentina (.com.ar)
 6. Ordenar de MENOR a MAYOR precio
 
-FORMATO:
+FORMATO DE CADA RESULTADO:
 🏍️ **[Modelo completo]** - [Año] - [0KM/Usada] - [KM si disponible]
 💰 **Precio: $[precio formateado] ARS**
 📍 **Ubicación:** [Ciudad/Provincia]
-🔗 **Ver en:** [MercadoLibre/OLX/etc]
+🔗 **Ver en:** [URL COMPLETA del anuncio - SIEMPRE incluir el link que encontraste]
+
+IMPORTANTE SOBRE LINKS:
+- SIEMPRE incluí el link completo después de "Ver en:"
+- El link debe ser la URL real del anuncio (ej: https://www.mercadolibre.com.ar/...)
+- Si encontraste el anuncio en un sitio web, MOSTRAR ese link
+- NO pongas solo el nombre del sitio, ponés el LINK COMPLETO
 
 ---
 
@@ -55,7 +61,8 @@ IMPORTANTE:
 - Ordená SIEMPRE de menor a mayor precio
 - Mostrá hasta 8 resultados
 - Si no encontrás en MercadoLibre, avisá
-- Explicá diferencias de precio (0KM vs usada)`
+- Explicá diferencias de precio (0KM vs usada)
+- CADA resultado DEBE tener su link real
         }
       ],
       tools: [
