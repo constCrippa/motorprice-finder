@@ -17,52 +17,15 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    console.log('📤 Buscando precios de:', message);
+    console.log('📤 Buscando:', message);
 
-    // Usar Claude Opus 4.7 que SÍ está disponible para tu cuenta
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
       model: 'claude-opus-4-7',
       max_tokens: 4096,
       messages: [
         {
           role: 'user',
-          content: `Sos un asistente especializado en búsqueda de precios de motos EN VENTA en Argentina. El usuario pregunta: "${message}"
-
-PASO 1 - VERIFICACIÓN ORTOGRÁFICA:
-Antes de buscar, verificá si hay errores ortográficos en marcas de motos. Marcas comunes:
-- Yamaha, Honda, Kawasaki, Suzuki, Zanella, Motomel, Gilera, Bajaj, KTM, Benelli, Corven, Beta
-
-Si detectás error ortográfico, respondé: "🤔 ¿Te referís a **[MARCA CORRECTA]**?"
-
-PASO 2 - BÚSQUEDA EN TIEMPO REAL:
-Usá web_search para buscar precios ACTUALES:
-1. OBLIGATORIO: Buscar "MercadoLibre Argentina ${message}"
-2. OBLIGATORIO: Buscar "site:mercadolibre.com.ar ${message}"
-3. Buscar también: OLX Argentina, DeMotos Argentina
-4. SOLO motos EN VENTA (ignorar noticias/reviews)
-5. SOLO resultados de Argentina (.com.ar)
-6. Ordenar de MENOR a MAYOR precio
-
-FORMATO DE CADA RESULTADO:
-🏍️ **[Modelo completo]** - [Año] - [0KM/Usada] - [KM si disponible]
-💰 **Precio: $[precio formateado] ARS**
-📍 **Ubicación:** [Ciudad/Provincia]
-🔗 **Ver en:** [URL COMPLETA del anuncio - SIEMPRE incluir el link que encontraste]
-
-IMPORTANTE SOBRE LINKS:
-- SIEMPRE incluí el link completo después de "Ver en:"
-- El link debe ser la URL real del anuncio (ej: https://www.mercadolibre.com.ar/...)
-- Si encontraste el anuncio en un sitio web, MOSTRAR ese link
-- NO pongas solo el nombre del sitio, ponés el LINK COMPLETO
-
----
-
-IMPORTANTE:
-- Ordená SIEMPRE de menor a mayor precio
-- Mostrá hasta 8 resultados
-- Si no encontrás en MercadoLibre, avisá
-- Explicá diferencias de precio (0KM vs usada)
-- CADA resultado DEBE tener su link real
+          content: 'Sos un asistente especializado en búsqueda de precios de motos EN VENTA en Argentina. El usuario pregunta: "' + message + '"\n\nPASO 1 - VERIFICACIÓN ORTOGRÁFICA:\nAntes de buscar, verifica si hay errores ortográficos en marcas de motos.\nMarcas: Yamaha, Honda, Kawasaki, Suzuki, Zanella, Motomel, Gilera, Bajaj, KTM, Benelli, Corven, Beta\n\nSi detectas error, responde: "¿Te referís a [MARCA CORRECTA]?"\n\nPASO 2 - BÚSQUEDA EN TIEMPO REAL:\nUsa web_search para buscar precios ACTUALES:\n1. OBLIGATORIO: Buscar "MercadoLibre Argentina ' + message + '"\n2. OBLIGATORIO: Buscar "site:mercadolibre.com.ar ' + message + '"\n3. Buscar: OLX Argentina, DeMotos Argentina\n4. SOLO motos EN VENTA (no noticias)\n5. SOLO Argentina (.com.ar)\n6. Ordenar de MENOR a MAYOR precio\n\nFORMATO:\n🏍️ **[Modelo]** - [Año] - [0KM/Usada]\n💰 **Precio: $[precio] ARS**\n📍 **Ubicación:** [Ciudad]\n🔗 **Ver en:** [LINK COMPLETO de MercadoLibre/OLX]\n\nIMPORTANTE:\n- Ordena SIEMPRE de menor a mayor precio\n- Muestra hasta 8 resultados\n- SIEMPRE incluye el link completo del anuncio\n- Explica diferencias de precio'
         }
       ],
       tools: [
@@ -93,7 +56,7 @@ IMPORTANTE:
     }
 
     res.json({
-      message: assistantMessage || 'No encontré información sobre esa moto.'
+      message: assistantMessage || 'No encontré información.'
     });
 
   } catch (error) {
@@ -117,6 +80,6 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`🤖 Usando Claude Opus 4.7`);
-  console.log(`🔑 API key: ${process.env.ANTHROPIC_API_KEY ? 'OK ✅' : 'FALTA ❌'}`);
+  console.log(`🤖 Claude Opus 4.7`);
+  console.log(`🔑 API: ${process.env.ANTHROPIC_API_KEY ? 'OK ✅' : 'FALTA ❌'}`);
 });
