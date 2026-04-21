@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 
-// Ruta API para el chatbot
+// Ruta API para el chatbot - VERSIÓN SIMPLE SIN WEB SEARCH
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
@@ -22,75 +22,23 @@ app.post('/api/chat', async (req, res) => {
     }
 
     console.log('✅ API key encontrada');
-    console.log('📤 Enviando request a Anthropic...');
+    console.log('📤 Enviando request a Anthropic (versión simple)...');
 
-    // Llamar a Anthropic API
+    // Llamar a Anthropic API - SIN WEB SEARCH
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
       model: 'claude-3-5-sonnet-20240620',
-      max_tokens: 4096,
+      max_tokens: 1024,
       messages: [
         {
           role: 'user',
-          content: `Sos un asistente especializado en búsqueda de precios de motos EN VENTA en Argentina. El usuario pregunta: "${message}"
+          content: `El usuario está buscando información sobre: "${message}"
 
-PASO 1 - VERIFICACIÓN ORTOGRÁFICA:
-Antes de buscar, verificá si hay errores ortográficos en marcas de motos. Marcas comunes en Argentina:
-- Yamaha (errores comunes: yamaja, iamaha, llamaha, yamha)
-- Honda (errores: jonda, onda, hoda)
-- Kawasaki (errores: kawasaky, kawasakki, kawazaki)
-- Suzuki (errores: susuki, suzuky, susuki)
-- Zanella (errores: zanela, zanella, sanella)
-- Motomel (errores: motomal, motomell, motomel)
-- Gilera (errores: guilera, gilerra, gilera)
-- Bajaj (errores: bajas, bajaj, bahaj)
-- KTM (errores: ktm, ktmm)
-- Benelli (errores: beneli, benelly, venelli)
-- Corven (errores: corben, corven, korven)
-- Beta (errores: veta, betha)
+Por ahora, respondé que estás en modo de prueba y que pronto vas a poder buscar precios reales de motos en Argentina.
 
-Si detectás un error ortográfico, respondé SOLO con:
-"🤔 ¿Te referís a **[MARCA CORRECTA]**? 
-Por favor confirmá o corregime y vuelvo a buscar."
-
-NO BUSQUES hasta que el usuario confirme.
-
-Si la ortografía está correcta, continuá con las instrucciones de búsqueda:
-
-INSTRUCCIONES CRÍTICAS:
-1. Usá la herramienta web_search MÚLTIPLES VECES para buscar en diferentes fuentes:
-   - OBLIGATORIO: Buscar en "MercadoLibre Argentina ${message}"
-   - OBLIGATORIO: Buscar en "site:mercadolibre.com.ar ${message}"
-   - Buscar también en: OLX Argentina, DeMotos Argentina, SoloMotos Argentina
-2. SOLO incluir resultados de MOTOS EN VENTA (ignorar noticias, reviews, artículos)
-3. SOLO resultados de Argentina (sitios .com.ar o que especifiquen Argentina)
-4. Extraer precios en pesos argentinos (ARS) - buscar formatos como "$XXX.XXX", "ARS XXX.XXX", etc.
-5. Ordenar TODOS los resultados de MENOR a MAYOR precio
-6. Incluir SIEMPRE resultados de MercadoLibre Argentina si están disponibles
-
-FORMATO DE RESPUESTA:
-Para cada moto encontrada:
-
-🏍️ **[Modelo completo]** ${message.includes('usada') || message.includes('usado') ? '- [Año] - [KM si disponible]' : '- [0KM o Usada] - [Año si disponible]'}
-💰 **Precio: $[precio formateado] ARS**
-📍 **Ubicación:** [Ciudad/Provincia si disponible]
-🔗 **Ver en:** [MercadoLibre / OLX / etc]
-
----
-
-IMPORTANTE:
-- Ordená SIEMPRE de menor a mayor precio
-- Si hay más de 8 resultados, mostrá los 8 más baratos
-- Si no encontrás en MercadoLibre, avisá al usuario
-- Indicar claramente si es 0KM o usada
-- Si hay mucha diferencia de precios, explicá brevemente por qué (ej: "La diferencia se debe a que algunas son 0KM y otras usadas")`
-        }
-      ],
-      tools: [
-        {
-          type: 'web_search_20250305',
-          name: 'web_search'
+Dale un mensaje amigable y decile que probaste que la conexión con la API funciona correctamente.`
         }
       ]
+      // SIN tools por ahora - solo probamos que funcione
     }, {
       headers: {
         'Content-Type': 'application/json',
@@ -114,7 +62,7 @@ IMPORTANTE:
     }
 
     res.json({
-      message: assistantMessage || 'No pude encontrar información sobre esa moto.'
+      message: assistantMessage || 'Conexión exitosa con la API.'
     });
 
   } catch (error) {
@@ -154,4 +102,6 @@ app.get('/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
   console.log(`🔑 API key configurada: ${process.env.ANTHROPIC_API_KEY ? 'SÍ ✅' : 'NO ❌'}`);
+  console.log(`⚠️  MODO PRUEBA - Sin web search por ahora`);
 });
+
